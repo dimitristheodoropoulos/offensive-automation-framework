@@ -1,0 +1,24 @@
+# Python environment files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment (Τοπικό περιβάλλον βιβλιοθηκών)
+venv/
+.venv/
+env/
+ENV/
+
+# Testing & Coverage (Από το pytest)
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Project Generated Artifacts (Το report που παράγεται τοπικά)
+osaf_report.json
+
+# OS specific files (Αρχεία συστήματος)
+.DS_Store
+.directory
+*~
