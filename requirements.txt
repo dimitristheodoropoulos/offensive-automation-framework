@@ -1,3 +1,13 @@
 # Testing Suite & Code Coverage (Used in CI/CD pipeline)
 pytest>=8.0.0
 pytest-cov>=5.0.0
+
+# Core agentic framework dependencies
+langgraph>=0.2.0
+langchain>=0.3.0
+
+# LLM Provider: Google Gemini (δωρεάν, δεν χρειάζονται credits)
+langchain-google-genai>=0.0.1
+
+# Offensive security tooling
+python-owasp-zap-v2.4>=0.0.21

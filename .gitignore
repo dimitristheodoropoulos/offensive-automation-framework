@@ -15,8 +15,15 @@ ENV/
 .coverage
 htmlcov/
 
-# Project Generated Artifacts (Το report που παράγεται τοπικά)
+# Environment Variables & API Keys (Προστασία μυστικών κλειδιών)
+.env
+.env.*
+*.env
+
+# Project Generated Artifacts & Folders (Αναφορές και Benchmarks που παράγονται τοπικά)
 osaf_report.json
+reports/
+benchmarks/
 
 # OS specific files (Αρχεία συστήματος)
 .DS_Store
