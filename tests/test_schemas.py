@@ -1,4 +1,3 @@
-import pytest
 from core.schemas import VulnerabilityRecord, ToolExecutionResult
 
 def test_vulnerability_record_valid():

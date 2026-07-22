@@ -2,13 +2,12 @@
 from dotenv import load_dotenv
 load_dotenv()  # Φορτώνει αυτόματα το .env αρχείο πριν από οποιαδήποτε αρχικοποίηση
 
-import os
-import json
-from langgraph.graph import StateGraph, END
-from langchain_google_genai import ChatGoogleGenerativeAI
+import json  # noqa: E402
+from langgraph.graph import StateGraph, END  # noqa: E402
+from langchain_google_genai import ChatGoogleGenerativeAI  # noqa: E402
 
-from orchestration.state import PentestState
-from orchestration.tools import (
+from orchestration.state import PentestState  # noqa: E402
+from orchestration.tools import (  # noqa: E402
     nmap_tool, 
     cve_tool, 
     post_exploit_tool, 
@@ -18,17 +17,16 @@ from orchestration.tools import (
     proxy_logger_tool,
     websocket_fuzz_tool,
     netcode_fuzz_tool,
-    game_script_sast_tool,
     microtransaction_audit_tool,
     report_generator_tool,
     remediation_tool
 )
-from orchestration.utils import extract_json_content, sanitize_untrusted_input
+from orchestration.utils import extract_json_content, sanitize_untrusted_input  # noqa: E402
 
 # --- ΕΙΣΑΓΩΓΗ ADAPTERS & REGISTRY ---
-from core.adapters import global_registry
-from core.init_framework import initialize_osaf_tools
-from core.schemas import ToolExecutionResult
+from core.adapters import global_registry  # noqa: E402
+from core.init_framework import initialize_osaf_tools  # noqa: E402
+from core.schemas import ToolExecutionResult  # noqa: E402
 
 # Αρχικοποίηση των tool adapters κατα την εκκίνηση του γραφήματος
 initialize_osaf_tools()
@@ -65,7 +63,7 @@ Respond strictly in JSON: {{"exploit_recommended": true/false, "reason": "why"}}
             state["next_action"] = "exploit"
         else:
             state["next_action"] = "route_to_web"
-    except:
+    except Exception:
         state["next_action"] = "route_to_web"
         
     return state

@@ -14,10 +14,14 @@ def scan_ports(ip, ports=[22, 80, 443, 8080]):
         if result == 0:
             # Βασικό mapping υπηρεσιών βάσει θύρας
             service_name = "unknown"
-            if port == 22: service_name = "ssh"
-            elif port == 80: service_name = "http"
-            elif port == 443: service_name = "https"
-            elif port == 8080: service_name = "http-proxy"
+            if port == 22:
+                service_name = "ssh"
+            elif port == 80:
+                service_name = "http"
+            elif port == 443:
+                service_name = "https"
+            elif port == 8080:
+                service_name = "http-proxy"
             
             detected_services.append({"port": port, "service": service_name})
         sock.close()

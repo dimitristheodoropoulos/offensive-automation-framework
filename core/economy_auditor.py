@@ -2,7 +2,7 @@
 import asyncio
 import time
 import httpx
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 class InGameEconomyAuditor:
     def __init__(self, target_base_url: str = "http://127.0.0.1:3000"):

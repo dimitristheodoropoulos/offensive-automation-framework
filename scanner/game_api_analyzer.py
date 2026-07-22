@@ -1,7 +1,6 @@
 # scanner/game_api_analyzer.py
 import urllib.request
 import urllib.error
-import json
 from typing import List, Dict, Any
 
 
@@ -31,7 +30,7 @@ class GameAPIAnalyzer:
                 )
                 with urllib.request.urlopen(req, timeout=3) as response:
                     headers = dict(response.headers)
-                    status_code = response.status
+                    # status_code = response.status
 
                     # Έλεγχος Rate Limiting Headers
                     has_rate_limit = any(
@@ -58,7 +57,7 @@ class GameAPIAnalyzer:
                         "endpoint": path,
                         "issue": f"Unexpected HTTP Status Code: {e.code}",
                     })
-            except Exception as e:
+            except Exception:
                 # Catch network connectivity issues / timeouts
                 continue
 

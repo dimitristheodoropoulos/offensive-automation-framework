@@ -1,5 +1,4 @@
 # tests/test_rag.py
-import pytest
 from core.rag_store import CveRagStore
 
 def test_rag_store_operations():

@@ -54,7 +54,7 @@ class GhidraHeadlessAnalyzer:
                         "risk": "Low",
                         "description": f"Ghidra exited with code {result.returncode}: {result.stderr[:200]}"
                     })
-        except Exception as e:
+        except Exception:
             findings.extend(self._fallback_static_analysis())
         
         return findings

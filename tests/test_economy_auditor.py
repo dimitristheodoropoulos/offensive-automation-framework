@@ -1,5 +1,4 @@
 # tests/test_economy_auditor.py
-import pytest
 from core.economy_auditor import InGameEconomyAuditor
 
 def test_economy_auditor_initialization():

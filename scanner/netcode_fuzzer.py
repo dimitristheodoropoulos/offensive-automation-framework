@@ -1,9 +1,6 @@
 # scanner/netcode_fuzzer.py
 import socket
-import struct
-import time
-import random
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 class GameNetcodeFuzzer:
     """Simulates custom UDP/TCP game netcode fuzzing, packet tampering, and state replication boundary tests."""
@@ -69,7 +66,7 @@ class GameNetcodeFuzzer:
         }
 
     def test_tick_rate_race_condition(self) -> Dict[str, Any]:
-        print(f"[*] [Netcode Fuzzer] Simulating high-frequency tick rate race conditions...")
+        print("[*] [Netcode Fuzzer] Simulating high-frequency tick rate race conditions...")
         return {
             "vector": "Tick Rate State Race Condition",
             "severity": "Medium",

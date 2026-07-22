@@ -1,5 +1,4 @@
 # tests/test_game_script_and_microtransaction.py
-import pytest
 from scanner.game_script_sast import GameScriptAnalyzer
 from scanner.microtransaction_analyzer import MicrotransactionAuditor
 from orchestration.tools import game_script_sast_tool, microtransaction_audit_tool

@@ -1,8 +1,7 @@
 # core/netcode_fuzzer.py
 import asyncio
 import time
-import socket
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 class NetcodeDesyncFuzzer:
     def __init__(self, target_host: str = "127.0.0.1", target_port: int = 7777):
@@ -29,7 +28,7 @@ class NetcodeDesyncFuzzer:
                 lambda: asyncio.DatagramProtocol(),
                 remote_addr=(self.target_host, self.target_port)
             )
-        except Exception as e:
+        except Exception:
             # Σε περίπτωση που ο τοπικός server δεν ακούει, προσομοιώνουμε το network path για τις ανάγκες των tests/offline mode
             transport = None
 

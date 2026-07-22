@@ -1,5 +1,4 @@
 # tests/test_ollama.py
-import pytest
 from core.llm_provider import LocalLLMProvider, get_local_llm
 
 def test_local_llm_provider_initialization():

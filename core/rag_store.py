@@ -1,5 +1,4 @@
 # core/rag_store.py
-import os
 import chromadb
 from sentence_transformers import SentenceTransformer
 

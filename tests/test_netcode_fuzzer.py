@@ -1,5 +1,4 @@
 # tests/test_netcode_fuzzer.py
-import pytest
 from core.netcode_fuzzer import NetcodeDesyncFuzzer
 
 def test_netcode_fuzzer_initialization():

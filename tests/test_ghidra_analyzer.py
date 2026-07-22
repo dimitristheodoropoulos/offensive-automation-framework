@@ -1,6 +1,4 @@
 # tests/test_ghidra_analyzer.py
-import os
-import pytest
 from scanner.ghidra_headless_analyzer import GhidraHeadlessAnalyzer
 from orchestration.tools import ghidra_sast_tool
 

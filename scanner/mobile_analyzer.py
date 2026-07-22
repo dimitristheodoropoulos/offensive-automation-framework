@@ -1,6 +1,5 @@
 # scanner/mobile_analyzer.py
 import re
-import os
 from typing import Dict, Any, List
 
 class MobileAppAnalyzer:

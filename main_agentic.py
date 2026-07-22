@@ -73,7 +73,7 @@ def run_agent(target_ip: str):
     
     # Δυναμική εκτύπωση των metrics χωρίς εξάρτηση από συγκεκριμένα κλειδιά
     if "error" not in benchmark_results:
-        print(f"[+] Benchmark Evaluation Saved to JSON!")
+        print("[+] Benchmark Evaluation Saved to JSON!")
         for key, value in benchmark_results.items():
             print(f"    - {key}: {value}")
     else:

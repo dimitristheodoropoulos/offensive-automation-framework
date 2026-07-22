@@ -1,5 +1,5 @@
 # scanner/microtransaction_analyzer.py
-from typing import Dict, Any, List
+from typing import Dict, Any
 
 class MicrotransactionAuditor:
     """Audits game backend microtransaction and matchmaking endpoints for business logic flaws."""
