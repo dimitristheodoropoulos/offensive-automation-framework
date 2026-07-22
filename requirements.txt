@@ -12,6 +12,7 @@ python-dotenv>=1.0.0
 
 # Vector Store & RAG Support (για τα CVEs & Vector Embeddings)
 chromadb>=0.4.0
+sentence-transformers>=2.2.0
 
 # Offensive security tooling
 python-owasp-zap-v2.4>=0.0.21
