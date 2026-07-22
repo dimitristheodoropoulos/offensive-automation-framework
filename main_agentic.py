@@ -43,7 +43,6 @@ def run_agent(target_ip: str):
             all_vulnerabilities.append(v)
 
     # Ανάκτηση Network Vulnerabilities / CVEs (από το Nmap & CVE Lookup Nodes)
-    # Ελέγχουμε αν υπάρχουν κλειδιά όπως 'cves_found' ή 'vulnerabilities' στο state σου
     network_vulns = result.get("cves_found") or result.get("vulnerabilities") or []
     if network_vulns:
         print(f"[+] Network vulnerabilities/CVEs found: {len(network_vulns)}")
@@ -61,7 +60,6 @@ def run_agent(target_ip: str):
     print(f"[+] {report_status}")
 
     # 4. Αυτόματο πέρασμα των δεδομένων στο benchmark_evaluation_tool
-    # Ορίζουμε το Ground Truth (π.χ. στο lab target μας περιμένουμε βάσει documentation 3 ευπάθειες)
     expected_vulns_in_lab = 3 
     
     print("[*] Running execution metrics against development baseline...")
@@ -70,15 +68,14 @@ def run_agent(target_ip: str):
         "target_name": target_ip,
         "expected_vulns_count": expected_vulns_in_lab,
         "execution_time_seconds": execution_time,
-        "tokens_used": result.get("tokens_used", 0)  # Αν κρατάς log των tokens, αλλιώς περνάει 0
+        "tokens_used": result.get("tokens_used", 0)
     })
     
-    # Εκτύπωση των metrics στην κονσόλα για άμεσο verification
+    # Δυναμική εκτύπωση των metrics χωρίς εξάρτηση από συγκεκριμένα κλειδιά
     if "error" not in benchmark_results:
         print(f"[+] Benchmark Evaluation Saved to JSON!")
-        print(f"    - Recall Rate: {benchmark_results.get('Recall Rate (%)')}")
-        print(f"    - Unique Medium/High Found: {benchmark_results.get('Unique Medium/High Found')}/{expected_vulns_in_lab}")
-        print(f"    - Total Execution Time: {benchmark_results.get('Execution Time (s)')} seconds")
+        for key, value in benchmark_results.items():
+            print(f"    - {key}: {value}")
     else:
         print(f"[-] Benchmark Error: {benchmark_results.get('error')}")
 

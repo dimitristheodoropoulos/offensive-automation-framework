@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  osaf-agent:
+    build: .
+    image: osaf-framework:latest
+    container_name: osaf_security_agent
+    env_file:
+      - .env
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    volumes:
+      - ./reports:/app/reports
+      - ./benchmarks:/app/benchmarks
+      - ./logs:/app/logs
+      - ./cve_vector_store:/app/cve_vector_store
+    stdin_open: true
+    tty: true
+    command: ["--help"]

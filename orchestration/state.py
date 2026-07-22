@@ -1,3 +1,4 @@
+# orchestration/state.py
 from typing import TypedDict, List, Dict, Any
 
 
@@ -10,6 +11,10 @@ class PentestState(TypedDict):
     next_action: str                          # Απόφαση του Agent
     history: List[str]                        # Reasoning trace
     web_scan_done: bool                       # Αποφεύγει ατέρμον web_scan loop
+    # Νέα πεδία για το Critic-Refinement Loop
+    iteration_count: int
+    critic_feedback: str
+    requires_remediation: bool
 
 
 def new_state(target: str) -> PentestState:
@@ -23,4 +28,7 @@ def new_state(target: str) -> PentestState:
         "next_action": "",
         "history": [],
         "web_scan_done": False,
+        "iteration_count": 0,
+        "critic_feedback": "",
+        "requires_remediation": False,
     }

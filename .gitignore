@@ -24,8 +24,11 @@ htmlcov/
 osaf_report.json
 reports/
 benchmarks/
+logs/proxy_traffic/
 
 # OS specific files (Αρχεία συστήματος)
 .DS_Store
 .directory
 *~
+cve_vector_store/
+test_chroma_db/
