@@ -2,44 +2,54 @@ name: OSAF Continuous Integration
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ main, master ]
 
 jobs:
-  test-and-lint:
+  lint-and-test:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.12'
-        cache: 'pip'
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
 
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        pip install pytest pytest-cov
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install ruff
 
-    - name: Python Syntax & Compilation Check
-      run: |
-        python -m compileall -q .
+      - name: Run Ruff (Code Linting)
+        run: |
+          ruff check .
 
-    - name: Run Test Suite
-      env:
-        PYTHONPATH: .
-        GEMINI_API_KEY: "dummy-key-for-ci"
-      run: |
-        pytest tests/ -v --cov=. --cov-report=term-missing
+      - name: Run Test Suite & Coverage
+        env:
+          GEMINI_API_KEY: "dummy-key-for-ci"
+        run: |
+          PYTHONPATH=. pytest -v --cov=. --cov-report=term-missing
 
-    - name: CLI Smoke Test
-      env:
-        PYTHONPATH: .
-        GEMINI_API_KEY: "dummy-key-for-ci"
-      run: |
-        python3 cli.py --help
+  docker-build:
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Test Docker Build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: offensive-automation-framework:latest
