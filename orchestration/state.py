@@ -15,9 +15,12 @@ class PentestState(TypedDict):
     iteration_count: int
     critic_feedback: str
     requires_remediation: bool
+    # Προαιρετικά πεδία για το Mobile SAST (companion app manifest/source)
+    mobile_manifest: str
+    mobile_source: str
 
 
-def new_state(target: str) -> PentestState:
+def new_state(target: str, mobile_manifest: str = "", mobile_source: str = "") -> PentestState:
     """Helper για να ξεκινάς πάντα με ένα καθαρό, πλήρως αρχικοποιημένο state."""
     return {
         "target": target,
@@ -31,4 +34,6 @@ def new_state(target: str) -> PentestState:
         "iteration_count": 0,
         "critic_feedback": "",
         "requires_remediation": False,
+        "mobile_manifest": mobile_manifest,
+        "mobile_source": mobile_source,
     }

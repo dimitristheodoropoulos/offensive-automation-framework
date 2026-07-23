@@ -46,6 +46,20 @@ def main():
     )
 
     parser.add_argument(
+        "--mobile-manifest",
+        type=str,
+        default=None,
+        help="Path to an AndroidManifest.xml to run Mobile SAST against (optional)"
+    )
+
+    parser.add_argument(
+        "--mobile-source",
+        type=str,
+        default=None,
+        help="Path to a mobile source/strings file to scan for hardcoded secrets (optional, requires --mobile-manifest)"
+    )
+
+    parser.add_argument(
         "-h", "--help", 
         action="store_true", 
         help="Show help message and exit"
@@ -68,6 +82,8 @@ def main():
         table.add_row("--target TARGET", "Target IP address or domain name to scan", "127.0.0.1")
         table.add_row("--profile", "Assessment profile (full, web, infra, websocket)", "full")
         table.add_row("--history", "Display recent scans stored in local DB", "False")
+        table.add_row("--mobile-manifest PATH", "AndroidManifest.xml to run Mobile SAST against", "None")
+        table.add_row("--mobile-source PATH", "Mobile source/strings file to scan for secrets", "None")
         table.add_row("-h, --help", "Show this help message and exit", "-")
         
         console.print(table)
@@ -104,13 +120,32 @@ def main():
         border_style="green"
     ))
 
+    mobile_manifest_content = ""
+    mobile_source_content = ""
+    if args.mobile_manifest:
+        try:
+            with open(args.mobile_manifest, "r", encoding="utf-8") as f:
+                mobile_manifest_content = f.read()
+            console.print(f"[*] Mobile manifest loaded from: [cyan]{args.mobile_manifest}[/cyan]")
+        except Exception as e:
+            console.print(f"[!] Warning: could not read --mobile-manifest ({e}). Skipping Mobile SAST.", style="yellow")
+
+    if args.mobile_source and mobile_manifest_content:
+        try:
+            with open(args.mobile_source, "r", encoding="utf-8") as f:
+                mobile_source_content = f.read()
+        except Exception as e:
+            console.print(f"[!] Warning: could not read --mobile-source ({e}). Continuing without it.", style="yellow")
+
     initial_state = {
         "target": args.target,
         "history": [],
         "scan_results": [],
         "enriched_cves": [],
         "web_vulnerabilities": [],
-        "next_action": ""
+        "next_action": "",
+        "mobile_manifest": mobile_manifest_content,
+        "mobile_source": mobile_source_content
     }
 
     try:

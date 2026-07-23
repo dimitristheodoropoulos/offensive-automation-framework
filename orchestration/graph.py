@@ -18,6 +18,7 @@ from orchestration.tools import (  # noqa: E402
     websocket_fuzz_tool,
     netcode_fuzz_tool,
     microtransaction_audit_tool,
+    mobile_sast_tool,
     report_generator_tool,
     remediation_tool
 )
@@ -209,7 +210,26 @@ def game_security_agent_node(state: PentestState) -> PentestState:
             "description": vuln.get("description")
         })
 
-    state["history"].append("[Game Security Agent] Comprehensive game netcode, WS, and microtransaction audit completed.")
+    # 5. Mobile Companion App SAST (προαιρετικό — τρέχει μόνο αν δόθηκε ένα AndroidManifest.xml)
+    mobile_manifest = state.get("mobile_manifest", "")
+    if mobile_manifest:
+        state["history"].append("[Game Security Agent] Mobile manifest supplied — running Mobile SAST scan.")
+        mobile_findings = mobile_sast_tool.invoke({
+            "manifest_xml": mobile_manifest,
+            "source_code": state.get("mobile_source", "")
+        })
+        for finding in mobile_findings:
+            state["web_vulnerabilities"].append({
+                "name": finding.get("name"),
+                "risk": finding.get("risk"),
+                "url": f"mobile://{target_host}",
+                "description": finding.get("description")
+            })
+        state["history"].append(f"[Game Security Agent] Mobile SAST complete: {len(mobile_findings)} finding(s).")
+    else:
+        state["history"].append("[Game Security Agent] No mobile manifest supplied — skipping Mobile SAST.")
+
+    state["history"].append("[Game Security Agent] Comprehensive game netcode, WS, microtransaction, and mobile audit completed.")
     state["next_action"] = "remediate"
     return state
 
