@@ -27,7 +27,7 @@ infra_agent ─┬─(exploit_recommended)──> exploit_node ──> web_agent
 - **`exploit_node`** — runs a safe, local post-exploitation simulation (privilege/logging checks) via `post_exploit_tool`.
 - **`web_agent_node`** — orchestrates a real DAST pipeline: a real **OWASP ZAP v2** spider + active scan against a running ZAP proxy (with deduplicated, sanitized alerts), a real `nuclei` subprocess scan, passive proxy logging, and conditional delegation to a real `sqlmap` subprocess when an injection signature is suspected — see the fidelity note below for `sqlmap_tool`'s no-sqlmap-installed fallback.
 - **`critic_agent_node`** — a **self-correction loop**: if the web scan returns zero findings and iteration count is below 2, it forces a retry with adjusted depth instead of silently proceeding with an empty result set.
-- **`game_security_agent_node`** — runs four checks against the target: a proprietary game fuzzer via the adapter registry, WebSocket fuzzing, UDP netcode fuzzing (via `netcode_fuzz_tool`, which wraps `scanner/netcode_fuzzer.py`'s blocking-socket `GameNetcodeFuzzer` — see fidelity note), and a microtransaction/matchmaking logic audit — merging all findings into the shared vulnerability list.
+- **`game_security_agent_node`** — runs five checks against the target: a proprietary game fuzzer via the adapter registry, WebSocket fuzzing, UDP netcode fuzzing (via `netcode_fuzz_tool`, which wraps `scanner/netcode_fuzzer.py`'s blocking-socket `GameNetcodeFuzzer` — see fidelity note), a microtransaction/matchmaking logic audit, and an optional **Mobile SAST** pass (`mobile_sast_tool`) against a companion Android app's manifest/source when supplied via `--mobile-manifest`/`--mobile-source` — merging all findings into the shared vulnerability list.
 - **`remediation_agent_node`** — feeds all accumulated vulnerabilities to `remediation_tool`, a **rule-based template generator** (not LLM-backed — it pattern-matches on risk level to produce fix guidance), and appends the result as its own finding entry. A genuinely LLM-backed critic (`local_llm_critic_tool`, local Ollama) exists in `orchestration/tools.py` but is not currently wired into any node in `graph.py`.
 - **`report_node`** — compiles the final Markdown report from the complete finding set.
 
@@ -53,7 +53,7 @@ Worth noting separately: `orchestration/tools.py` also defines `economy_auditor_
 | `web_vuln_scanner_tool` | OWASP ZAP v2 API | Real (needs local ZAP proxy) | ✅ |
 | `nuclei_tool` | `nuclei` subprocess | Real (needs `nuclei` installed) | ✅ |
 | `sqlmap_tool` | `sqlmap` subprocess | Real, but always-vulnerable fallback if `sqlmap` missing | ✅ |
-| `mobile_sast_tool` | `scanner/mobile_analyzer.py` | Real regex SAST | Not currently called by a node |
+| `mobile_sast_tool` | `scanner/mobile_analyzer.py` | Real regex SAST | ✅ (in `game_security_agent_node`, gated on optional `--mobile-manifest`) |
 | `game_api_sast_tool` | `scanner/game_api_analyzer.py` | Real HTTP check + mocked gRPC check | Not currently called by a node |
 | `websocket_fuzz_tool` | `orchestration/websocket_fuzzer.py` | Hardcoded findings | ✅ |
 | `netcode_fuzz_tool` | `scanner/netcode_fuzzer.py` (`GameNetcodeFuzzer`) | Real blocking-socket UDP | ✅ |
@@ -68,7 +68,7 @@ Worth noting separately: `orchestration/tools.py` also defines `economy_auditor_
 | `report_generator_tool` | inline | Real Markdown writer | ✅ |
 | `benchmark_evaluation_tool` | `orchestration/benchmarker.py` | Real | Called from `main_agentic.py`, not `graph.py`'s node flow |
 
-Several fully-implemented, real tools (mobile SAST, game API SAST, game-script secret scanning, Ghidra binary analysis, the real economy/netcode auditors, the local LLM critic) exist and pass their own tests but aren't yet called anywhere in the live LangGraph flow — a natural next step for the project is wiring these into `game_security_agent_node` or a new dedicated node.
+Several other fully-implemented, real tools (game API SAST, game-script secret scanning, Ghidra binary analysis, the real economy/netcode auditors, the local LLM critic) exist and pass their own tests but aren't yet called anywhere in the live LangGraph flow — Mobile SAST has since been wired in (see above); a natural next step is wiring in the rest via `game_security_agent_node` or dedicated new nodes.
 
 ### Prompt-Injection Guardrails
 
@@ -147,7 +147,7 @@ offensive-automation-framework/
 ├── tests/                          # pytest suite (34/34 passing)
 ├── Dockerfile / docker-compose.yml
 └── .github/workflows/ci.yml        # GitHub Actions CI (lint via ruff, tests)
-```
+
 
 ---
 
@@ -160,13 +160,13 @@ cd offensive-automation-framework
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-
+```
 
 Create a `.env` file in the project root:
 
-
+```
 GEMINI_API_KEY="your_actual_gemini_api_key_here"
-
+```
 
 ---
 
@@ -178,31 +178,37 @@ python3 cli.py --target 127.0.0.1 --profile full
 
 `--profile` accepts `full`, `web`, `infra`, or `websocket`.
 
+**Run with an optional Mobile SAST pass** (for a companion Android app):
+
+python3 cli.py --target 127.0.0.1 --mobile-manifest ./AndroidManifest.xml --mobile-source ./strings.xml
+
+If `--mobile-manifest` is omitted, `game_security_agent_node` skips the mobile scan entirely — this keeps default runs unchanged.
+
 **View local scan history (SQLite-backed):**
 
 python3 cli.py --history
-```
+
 
 **Run the standalone agentic entrypoint** (invokes the LangGraph pipeline directly, without the `cli.py`/SQLite wrapper, and auto-runs the report + benchmark tools at the end):
 
 python3 main_agentic.py 127.0.0.1
-```
+
 
 **Run the legacy linear scan** (no LangGraph, faster smoke-test path — Nmap → RAG/dictionary CVE lookup → optional post-exploit simulation → JSON export):
 
 python3 main.py -t 127.0.0.1 --sim-post
-```
+
 This path has its own independent RAG CVE lookup (`enrichment/cve_lookup.py`) with a ChromaDB+SentenceTransformer implementation and a hardcoded dictionary fallback (`FALLBACK_VULN_DB`) if the vector store fails to initialize — separate from the `core/rag_store.py` store used by the agentic pipeline.
 
 **Run the test suite:**
 
 PYTHONPATH=. pytest -v
-```
+
 
 **Docker:**
 
 docker compose up --build
-```
+
 
 ---
 
