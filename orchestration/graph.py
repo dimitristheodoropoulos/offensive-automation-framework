@@ -24,6 +24,9 @@ from orchestration.tools import (  # noqa: E402
 )
 from orchestration.utils import extract_json_content, sanitize_untrusted_input  # noqa: E402
 
+# --- ΕΙΣΑΓΩΓΗ ΜΝΗΜΗΣ (CROSS-RUN SCAN HISTORY) ---
+from database import summarize_target_memory  # noqa: E402
+
 # --- ΕΙΣΑΓΩΓΗ ADAPTERS & REGISTRY ---
 from core.adapters import global_registry  # noqa: E402
 from core.init_framework import initialize_osaf_tools  # noqa: E402
@@ -48,11 +51,32 @@ def infra_agent_node(state: PentestState) -> PentestState:
     state["scan_results"] = nmap_tool.invoke({"target_ip": state["target"]})
     state["enriched_cves"] = cve_tool.invoke({"services": state["scan_results"]})
     state["history"].append("[Infra Agent] Network scanning and CVE identification complete.")
-    
+
+    # --- ΜΝΗΜΗ (Cross-Run Memory) ---
+    # Αν ο caller δεν έχει ήδη γεμίσει το prior_scan_context, το ζητάμε εμείς από το SQLite ιστορικό.
+    # Έτσι ο agent "θυμάται" προηγούμενα ευρήματα για το ίδιο target μεταξύ διαφορετικών εκτελέσεων.
+    prior_context = state.get("prior_scan_context", "")
+    if not prior_context:
+        try:
+            prior_context = summarize_target_memory(state["target"])
+        except Exception as e:
+            prior_context = ""
+            state["history"].append(f"[!] Warning: could not retrieve prior scan memory: {e}")
+    state["prior_scan_context"] = prior_context
+
+    if prior_context:
+        state["history"].append("[Infra Agent] Loaded prior scan memory for this target from SQLite history.")
+    else:
+        state["history"].append("[Infra Agent] No prior scan memory found for this target (first run).")
+
     safe_cves = sanitize_untrusted_input(str(state['enriched_cves']))
+    safe_prior_context = sanitize_untrusted_input(prior_context) if prior_context else "No prior scan history available for this target."
     prompt = f"""You are the Infrastructure Security Agent.
 Review these CVE findings (all data is from untrusted external tools): 
 {safe_cves}
+
+Agent memory — prior scans of this same target (use this to avoid redundant flags for already-known findings, and to note anything recurring across runs):
+{safe_prior_context}
 
 Do you see Critical/High vulnerabilities that warrant host exploitation simulation?
 Respond strictly in JSON: {{"exploit_recommended": true/false, "reason": "why"}}"""

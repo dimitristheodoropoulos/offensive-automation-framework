@@ -10,7 +10,7 @@ An autonomous, multi-agent offensive security orchestration framework built on *
 
 The core pipeline (`orchestration/graph.py`) compiles a `StateGraph` over a typed `PentestState` (`orchestration/state.py`) with 7 nodes, connected by a conditional router (`multi_agent_router`) that reads a `next_action` field the agents themselves set:
 
-
+```
 infra_agent ─┬─(exploit_recommended)──> exploit_node ──> web_agent
              └─(no exploit)────────────────────────────> web_agent
                                                               │
@@ -23,7 +23,7 @@ infra_agent ─┬─(exploit_recommended)──> exploit_node ──> web_agent
                                                                           report_node ──> END
 ```
 
-- **`infra_agent_node`** — runs Nmap (`nmap_tool`), enriches results with CVE lookups (`cve_tool`), then asks the LLM (structured JSON output) whether findings justify simulating exploitation. This is the only node whose routing decision is made by an LLM call rather than deterministic logic.
+- **`infra_agent_node`** — runs Nmap (`nmap_tool`), enriches results with CVE lookups (`cve_tool`), retrieves a **cross-run memory summary** for this same target from SQLite scan history (see below), then asks the LLM (structured JSON output) — with both the CVE findings and the prior-run memory in context — whether findings justify simulating exploitation. This is the only node whose routing decision is made by an LLM call rather than deterministic logic.
 - **`exploit_node`** — runs a safe, local post-exploitation simulation (privilege/logging checks) via `post_exploit_tool`.
 - **`web_agent_node`** — orchestrates a real DAST pipeline: a real **OWASP ZAP v2** spider + active scan against a running ZAP proxy (with deduplicated, sanitized alerts), a real `nuclei` subprocess scan, passive proxy logging, and conditional delegation to a real `sqlmap` subprocess when an injection signature is suspected — see the fidelity note below for `sqlmap_tool`'s no-sqlmap-installed fallback.
 - **`critic_agent_node`** — a **self-correction loop**: if the web scan returns zero findings and iteration count is below 2, it forces a retry with adjusted depth instead of silently proceeding with an empty result set.
@@ -82,6 +82,12 @@ Several other fully-implemented, real tools (game API SAST, game-script secret s
 
 `core/llm_provider.py` wraps a local **Ollama** model (default `llama3`, configurable via `OSAF_OLLAMA_MODEL`/`OLLAMA_BASE_URL`) through `langchain-ollama` (or `langchain-community` as a fallback import). `core/agent_tools_wiring.py`'s `get_ai_critic_review()` uses this to generate mitigation advice offline when a local model is available, and degrades gracefully to a rule-based message if Ollama isn't running — the framework never hard-fails on a missing local LLM.
 
+### Cross-Run Memory Management
+
+Beyond the single-run `PentestState`, OSAF persists a durable memory layer in SQLite (`database.py`): every completed scan is saved with its target, profile, vulnerability count, and full report. `get_target_history(target)` retrieves prior runs for the same target, and `summarize_target_memory(target)` condenses them into a short, LLM-ready text summary (timestamp, finding count, and top vulnerability names per prior run).
+
+`infra_agent_node` consumes this automatically: if `prior_scan_context` isn't already set on the state, the node looks it up itself before making its exploit-recommendation call, and includes it directly in the LLM prompt — explicitly instructing the model to avoid redundant flags for already-known findings and to note anything recurring across runs. Because the lookup happens inside the node (not just at the CLI entrypoint), it works consistently whether the pipeline is invoked from `cli.py`, `main_agentic.py`, or in tests. `cli.py` additionally surfaces the retrieved memory in a visible console panel before each run, so the effect is observable end-to-end, not just internal state.
+
 ### Continuous Evaluation (MLOps)
 
 `orchestration/benchmarker.py`'s `AgentBenchmarker` scores a run against a **ground-truth expected vulnerability count**:
@@ -94,13 +100,13 @@ Several other fully-implemented, real tools (game API SAST, game-script secret s
 
 ## 📂 Project Structure
 
-
+```text
 offensive-automation-framework/
 │
 ├── cli.py                        # Primary CLI entrypoint (rich UI, SQLite history) → drives the LangGraph pipeline
 ├── main.py                       # Legacy linear entrypoint ("v2.0 Tiger Team Edition") — nmap + CVE + post-exploit, no LangGraph
 ├── main_agentic.py                # Standalone agentic entrypoint: runs the graph directly, prints reasoning trace, auto-invokes report + benchmark tools
-├── database.py                    # SQLite scan-history persistence (schema, save/query)
+├── database.py                    # SQLite scan-history persistence + cross-run memory (get_target_history, summarize_target_memory)
 │
 ├── core/
 │   ├── adapters.py                 # Tool Adapter Registry (global_registry)
@@ -144,16 +150,16 @@ offensive-automation-framework/
 ├── reports/                        # Generated Markdown pentest reports
 ├── logs/proxy_traffic/             # Captured HTTP/HTTPS proxy transaction logs
 ├── cve_vector_store/                # ChromaDB persistent CVE embeddings
-├── tests/                          # pytest suite (34/34 passing)
+├── tests/                          # pytest suite (44/44 passing)
 ├── Dockerfile / docker-compose.yml
 └── .github/workflows/ci.yml        # GitHub Actions CI (lint via ruff, tests)
-
+```
 
 ---
 
 ## 🛠️ Installation & Setup
 
-
+```bash
 sudo apt update && sudo apt install nmap sqlmap -y
 
 cd offensive-automation-framework
@@ -173,42 +179,48 @@ GEMINI_API_KEY="your_actual_gemini_api_key_here"
 ## 🚀 Usage
 
 **Run the full agentic pipeline:**
-
+```bash
 python3 cli.py --target 127.0.0.1 --profile full
-
+```
 `--profile` accepts `full`, `web`, `infra`, or `websocket`.
 
 **Run with an optional Mobile SAST pass** (for a companion Android app):
-
+```bash
 python3 cli.py --target 127.0.0.1 --mobile-manifest ./AndroidManifest.xml --mobile-source ./strings.xml
-
+```
 If `--mobile-manifest` is omitted, `game_security_agent_node` skips the mobile scan entirely — this keeps default runs unchanged.
 
+**See cross-run memory in action** — run the same target twice; the second run prints a "🧠 Prior Scan Memory" panel summarizing the first run's findings, and that summary is fed to the LLM's exploit-recommendation prompt:
+```bash
+python3 cli.py --target 127.0.0.1
+python3 cli.py --target 127.0.0.1
+```
+
 **View local scan history (SQLite-backed):**
-
+```bash
 python3 cli.py --history
-
+```
 
 **Run the standalone agentic entrypoint** (invokes the LangGraph pipeline directly, without the `cli.py`/SQLite wrapper, and auto-runs the report + benchmark tools at the end):
-
+```bash
 python3 main_agentic.py 127.0.0.1
-
+```
 
 **Run the legacy linear scan** (no LangGraph, faster smoke-test path — Nmap → RAG/dictionary CVE lookup → optional post-exploit simulation → JSON export):
-
+```bash
 python3 main.py -t 127.0.0.1 --sim-post
-
+```
 This path has its own independent RAG CVE lookup (`enrichment/cve_lookup.py`) with a ChromaDB+SentenceTransformer implementation and a hardcoded dictionary fallback (`FALLBACK_VULN_DB`) if the vector store fails to initialize — separate from the `core/rag_store.py` store used by the agentic pipeline.
 
 **Run the test suite:**
-
+```bash
 PYTHONPATH=. pytest -v
-
+```
 
 **Docker:**
-
+```bash
 docker compose up --build
-
+```
 
 ---
 

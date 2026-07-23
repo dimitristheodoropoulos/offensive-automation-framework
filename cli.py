@@ -11,7 +11,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from orchestration.graph import agent_app
-from database import init_db, save_scan_result, get_recent_scans
+from database import init_db, save_scan_result, get_recent_scans, summarize_target_memory
 
 console = Console()
 
@@ -137,6 +137,13 @@ def main():
         except Exception as e:
             console.print(f"[!] Warning: could not read --mobile-source ({e}). Continuing without it.", style="yellow")
 
+    # --- ΜΝΗΜΗ: ανάκτηση περίληψης προηγούμενων σαρώσεων για το ίδιο target ---
+    prior_scan_context = summarize_target_memory(args.target)
+    if prior_scan_context:
+        console.print(Panel(prior_scan_context, title="🧠 Prior Scan Memory (from SQLite history)", border_style="blue"))
+    else:
+        console.print("[dim][*] No prior scan memory found for this target — first known run.[/dim]")
+
     initial_state = {
         "target": args.target,
         "history": [],
@@ -145,7 +152,8 @@ def main():
         "web_vulnerabilities": [],
         "next_action": "",
         "mobile_manifest": mobile_manifest_content,
-        "mobile_source": mobile_source_content
+        "mobile_source": mobile_source_content,
+        "prior_scan_context": prior_scan_context
     }
 
     try:

@@ -18,9 +18,11 @@ class PentestState(TypedDict):
     # Προαιρετικά πεδία για το Mobile SAST (companion app manifest/source)
     mobile_manifest: str
     mobile_source: str
+    # Cross-run "μνήμη": περίληψη προηγούμενων σαρώσεων του ίδιου target από το SQLite ιστορικό
+    prior_scan_context: str
 
 
-def new_state(target: str, mobile_manifest: str = "", mobile_source: str = "") -> PentestState:
+def new_state(target: str, mobile_manifest: str = "", mobile_source: str = "", prior_scan_context: str = "") -> PentestState:
     """Helper για να ξεκινάς πάντα με ένα καθαρό, πλήρως αρχικοποιημένο state."""
     return {
         "target": target,
@@ -36,4 +38,5 @@ def new_state(target: str, mobile_manifest: str = "", mobile_source: str = "") -
         "requires_remediation": False,
         "mobile_manifest": mobile_manifest,
         "mobile_source": mobile_source,
+        "prior_scan_context": prior_scan_context,
     }
