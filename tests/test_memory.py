@@ -9,7 +9,6 @@ tests/test_memory.py
 Κάθε test χρησιμοποιεί ένα προσωρινό SQLite αρχείο (μέσω monkeypatch στο database.DB_PATH),
 ώστε να μην αγγίζει ποτέ το πραγματικό reports/osaf_history.db.
 """
-import json
 import pytest
 
 import database
