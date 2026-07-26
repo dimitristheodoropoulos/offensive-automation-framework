@@ -259,3 +259,7 @@ python3 main_insurance.py
 ```
 
 See **[`insurance/README.md`](insurance/README.md)** for the full architecture, fidelity notes, and test coverage of this module.
+
+## Cloud Deployment & API
+
+The insurance triage pipeline is also exposed as a FastAPI microservice (`api_deployment.py`) for containerized cloud deployment -- see [`insurance/README.md`](insurance/README.md#cloud-ready-api-wrapper) for endpoints and usage.

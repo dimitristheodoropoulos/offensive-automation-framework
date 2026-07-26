@@ -47,3 +47,23 @@ Run the test suite for this module specifically:
 ```bash
 PYTHONPATH=. pytest tests/test_claim_fraud_scorer.py tests/test_insurance_claims_agent.py -v
 ```
+## Cloud-Ready API Wrapper
+
+`api_deployment.py` exposes the insurance triage graph as a FastAPI microservice, suitable for containerized deployment on any cloud platform (Render, Railway, AWS/GCP/Azure, etc.):
+
+```bash
+uvicorn api_deployment:app --reload --port 8000
+```
+
+Endpoints:
+- `GET /health` -- readiness probe; reports whether the LangGraph pipeline compiled successfully.
+- `POST /api/v1/insurance/triage` -- accepts a claim record as JSON, runs it through the full multi-agent pipeline, returns risk score/level, LLM summary, and itemized fraud signals.
+
+Example:
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/insurance/triage \
+  -H "Content-Type: application/json" \
+  -d @examples/claims/auto_high_risk.json
+```
+
+`monitoring/health_checker.py` is a standalone operational script that snapshots system state (SQLite history DB presence, CVE vector store presence, benchmark run count) to `reports/system_health_log.json` -- a starting point for future integration with a cloud monitoring/alerting stack, not a full monitoring solution on its own.
