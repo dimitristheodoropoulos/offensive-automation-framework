@@ -6,8 +6,7 @@ import os
 # Προσθήκη του τρέχοντος φακέλου στο path για σωστά imports
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-# Χρήση alias για συμβατότητα με την ονομασία της συνάρτησης στο insurance_graph.py
-from orchestration.insurance_graph import create_insurance_graph as compile_insurance_graph
+from orchestration import insurance_graph
 from orchestration.insurance_state import new_insurance_state
 
 app = FastAPI(
@@ -16,9 +15,16 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Φόρτωση του insurance graph
+# Δυναμική και ασφαλής φόρτωση του insurance graph
 try:
-    insurance_app = compile_insurance_graph()
+    if hasattr(insurance_graph, "compile_insurance_graph"):
+        insurance_app = insurance_graph.compile_insurance_graph()
+    elif hasattr(insurance_graph, "create_insurance_graph"):
+        insurance_app = insurance_graph.create_insurance_graph()
+    elif hasattr(insurance_graph, "app"):
+        insurance_app = insurance_graph.app
+    else:
+        insurance_app = None
 except Exception:
     insurance_app = None
 
