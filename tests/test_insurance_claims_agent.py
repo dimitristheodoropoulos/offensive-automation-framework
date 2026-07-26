@@ -50,3 +50,16 @@ def test_missing_required_fields_ends_early():
     final_state = insurance_agent_app.invoke(state)
     assert final_state["next_action"] == "end"
     assert final_state.get("report") is None
+
+
+def test_llm_explainer_produces_summary_or_graceful_fallback():
+    """
+    Δεν κάνουμε mock το LLM call εδώ -- αν δεν υπάρχει GEMINI_API_KEY στο .env
+    ή αποτύχει το call, το node πρέπει να πέσει graceful σε fallback string,
+    όχι να ρίξει exception.
+    """
+    state = new_insurance_state(CLAIM_HIGH_RISK)
+    final_state = insurance_agent_app.invoke(state)
+    assert final_state.get("llm_summary") is not None
+    assert isinstance(final_state["llm_summary"], str)
+    assert len(final_state["llm_summary"]) > 0
