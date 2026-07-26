@@ -1,6 +1,5 @@
 import os
 import json
-import time
 from datetime import datetime
 
 def check_system_health():

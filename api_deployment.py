@@ -3,7 +3,7 @@ from pydantic import BaseModel
 import sys
 import os
 
-# Προσθήκη του τρέχοντος φακέλου στο path για σωστά imports
+# Προσθήκη του τρέχοντος φακέλου στο path για σωστά imports[cite: 1]
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from orchestration.insurance_graph import compile_insurance_graph
@@ -15,10 +15,10 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Φόρτωση του insurance graph
+# Φόρτωση του insurance graph[cite: 1]
 try:
     insurance_app = compile_insurance_graph()
-except Exception as e:
+except Exception:
     insurance_app = None
 
 class ClaimValidationRequest(BaseModel):
