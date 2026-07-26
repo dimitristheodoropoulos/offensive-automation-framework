@@ -30,11 +30,32 @@ jobs:
         run: |
           ruff check .
 
-      - name: Run Test Suite & Coverage
+      - name: Run Full Test Suite & Coverage (Security + Insurance modules)
         env:
           GEMINI_API_KEY: "dummy-key-for-ci"
         run: |
           PYTHONPATH=. pytest -v --cov=. --cov-report=term-missing
+
+      - name: Run OSAF Pentest Agent Tests (explicit, for visibility)
+        env:
+          GEMINI_API_KEY: "dummy-key-for-ci"
+        run: |
+          PYTHONPATH=. pytest tests/ -v -k "not claim and not insurance"
+
+      - name: Run Insurance Claims Triage Agent Tests (explicit, for visibility)
+        env:
+          GEMINI_API_KEY: "dummy-key-for-ci"
+        run: |
+          PYTHONPATH=. pytest tests/test_claim_fraud_scorer.py tests/test_insurance_claims_agent.py -v
+
+      - name: Insurance CLI Smoke Test (end-to-end, JSON-driven examples)
+        env:
+          GEMINI_API_KEY: "dummy-key-for-ci"
+        run: |
+          python3 insurance_cli.py --list-samples
+          python3 insurance_cli.py --claim examples/claims/auto_high_risk.json
+          python3 insurance_cli.py --claim examples/claims/travel_medium_risk.json
+          python3 insurance_cli.py --claim examples/claims/health_low_risk.json
 
   docker-build:
     runs-on: ubuntu-latest
