@@ -1,5 +1,7 @@
 # OSAF (Offensive Security Automation Framework) — Agentic Multi-Agent Edition
 
+[![CI Pipeline](https://github.com/dimitristheodoropoulos/offensive-automation-framework/actions/workflows/ci.yml/badge.svg)](https://github.com/dimitristheodoropoulos/offensive-automation-framework/actions)
+
 An autonomous, multi-agent offensive security orchestration framework built on **LangGraph** and powered by Google Gemini (`gemini-2.5-flash`). OSAF automates a full penetration-testing lifecycle — recon, exploitation simulation, web AppSec testing, real-time game/netcode security auditing, remediation generation, and reporting — as a **state-machine-driven agent graph** rather than a linear script or an unconstrained single-agent loop.
 
 ---
