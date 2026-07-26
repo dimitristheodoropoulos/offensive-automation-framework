@@ -3,10 +3,11 @@ from pydantic import BaseModel
 import sys
 import os
 
-# Προσθήκη του τρέχοντος φακέλου στο path για σωστά imports[cite: 1]
+# Προσθήκη του τρέχοντος φακέλου στο path για σωστά imports
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from orchestration.insurance_graph import compile_insurance_graph
+# Χρήση alias για συμβατότητα με την ονομασία της συνάρτησης στο insurance_graph.py
+from orchestration.insurance_graph import create_insurance_graph as compile_insurance_graph
 from orchestration.insurance_state import new_insurance_state
 
 app = FastAPI(
@@ -15,7 +16,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Φόρτωση του insurance graph[cite: 1]
+# Φόρτωση του insurance graph
 try:
     insurance_app = compile_insurance_graph()
 except Exception:
