@@ -57,6 +57,16 @@ jobs:
           python3 insurance_cli.py --claim examples/claims/travel_medium_risk.json
           python3 insurance_cli.py --claim examples/claims/health_low_risk.json
 
+      - name: System Health & Monitoring Check Smoke Test
+        run: |
+          python3 monitoring/health_checker.py
+
+      - name: Cloud API Deployment Smoke Test
+        env:
+          GEMINI_API_KEY: "dummy-key-for-ci"
+        run: |
+          python3 -c "import uvicorn; from api_deployment import app; print('FastAPI app successfully imported and verified.')"
+
   docker-build:
     runs-on: ubuntu-latest
     needs: lint-and-test
