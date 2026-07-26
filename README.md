@@ -119,8 +119,10 @@ offensive-automation-framework/
 │   └── llm_provider.py             # Local Ollama LLM provider wrapper (offline critic fallback)
 │
 ├── orchestration/
-│   ├── graph.py                    # LangGraph StateGraph: node definitions + conditional routing
+│   ├── graph.py                    # LangGraph StateGraph (pentest pipeline): node definitions + conditional routing
 │   ├── state.py                    # PentestState TypedDict + initializer
+│   ├── insurance_graph.py          # LangGraph StateGraph (insurance claims pipeline) — same patterns, different domain
+│   ├── insurance_state.py          # InsuranceState TypedDict + initializer
 │   ├── tools.py                    # LangChain @tool matrix — 18 tools (see below); ZAP/Nuclei/SQLMap are real, several are demo-fidelity
 │   ├── sanitizer.py                # PromptInjectionSanitizer guardrail
 │   ├── benchmarker.py              # AgentBenchmarker — Precision/Recall/F1 + efficiency metrics
@@ -128,10 +130,16 @@ offensive-automation-framework/
 │   └── websocket_fuzzer.py         # Real-time WebSocket protocol fuzzer
 │
 ├── agents/
-│   └── game_security_agent.py      # Standalone game-security node using the adapter registry
+│   ├── game_security_agent.py      # Standalone game-security node using the adapter registry
+│   └── insurance_claims_agent.py   # Standalone insurance claims fraud/risk node using the same adapter registry
 │
 ├── adapters/
-│   └── proprietary_game_fuzzer.py  # Concrete adapter implementation for the game fuzzer (structured demo output)
+│   ├── proprietary_game_fuzzer.py  # Concrete adapter implementation for the game fuzzer (structured demo output)
+│   └── insurance_claim_adapter.py  # Concrete adapter for insurance claim fraud/risk scoring (real, data-derived signals)
+│
+├── insurance/
+│   ├── claim_fraud_scorer.py       # Real rule-based fraud/risk scoring logic — see insurance/README.md
+│   └── README.md                   # Insurance claims triage module — architecture & fidelity notes
 │
 ├── scanner/
 │   ├── game_api_analyzer.py        # Real HTTP checks for missing rate-limit headers; gRPC reflection check is currently mocked
@@ -239,3 +247,13 @@ docker compose up --build
 ## ⚠️ Security & Ethical Disclaimer
 
 This framework is developed strictly for educational, authorized penetration testing, and defensive engineering evaluation. It does not contain pre-packaged operational exploits or weaponized malware payloads. Always obtain written authorization before scanning any infrastructure.
+## Beyond Security: Applying the Same Multi-Agent Architecture to Insurance Claims Triage
+
+To validate that OSAF's orchestration layer is a general-purpose multi-agent framework rather than a security-specific script, the same architectural primitives — a typed state object threaded through every node, a conditional router driven by a `next_action` field, a critic-refinement retry loop, an LLM reasoning step, and the Tool Adapter Registry pattern — have been reused to build an independent **Insurance Claims Triage agent** (`orchestration/insurance_graph.py`), applied to a completely different domain: automated fraud/risk scoring for insurance claims.
+
+Run it standalone:
+```bash
+python3 main_insurance.py
+```
+
+See **[`insurance/README.md`](insurance/README.md)** for the full architecture, fidelity notes, and test coverage of this module.
