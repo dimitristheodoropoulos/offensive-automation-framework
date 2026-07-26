@@ -1,0 +1,12 @@
+{
+  "claim_id": "CLM-TRV-3390",
+  "policy_id": "POL-TR-1120",
+  "claim_amount": 1800.0,
+  "claim_type": "travel",
+  "policy_start_date": "2026-06-01",
+  "claim_date": "2026-07-15",
+  "submitted_docs": ["boarding_pass", "receipt"],
+  "historical_avg_claim_amount": 900.0,
+  "prior_claims_count": 1,
+  "metadata": {"destination": "Italy"}
+}

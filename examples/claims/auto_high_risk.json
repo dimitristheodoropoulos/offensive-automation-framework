@@ -1,0 +1,12 @@
+{
+  "claim_id": "CLM-AUTO-2201",
+  "policy_id": "POL-AU-8842",
+  "claim_amount": 12500.0,
+  "claim_type": "auto",
+  "policy_start_date": "2026-07-05",
+  "claim_date": "2026-07-19",
+  "submitted_docs": ["police_report"],
+  "historical_avg_claim_amount": 3100.0,
+  "prior_claims_count": 5,
+  "metadata": {"region": "Attica"}
+}

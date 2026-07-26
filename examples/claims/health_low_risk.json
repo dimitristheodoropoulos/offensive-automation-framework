@@ -1,0 +1,12 @@
+{
+  "claim_id": "CLM-HLT-4410",
+  "policy_id": "POL-HL-2290",
+  "claim_amount": 620.0,
+  "claim_type": "health",
+  "policy_start_date": "2018-03-01",
+  "claim_date": "2026-07-18",
+  "submitted_docs": ["medical_report", "invoice"],
+  "historical_avg_claim_amount": 650.0,
+  "prior_claims_count": 0,
+  "metadata": {"provider": "General Hospital of Athens"}
+}
