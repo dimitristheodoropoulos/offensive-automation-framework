@@ -20,3 +20,8 @@ python-owasp-zap-v2.4>=0.0.21
 # Terminal UI & Formatting
 rich>=13.0.0
 ruff==0.15.22
+
+# Cloud API & Microservice Deployment
+fastapi>=0.100.0
+uvicorn>=0.20.0
+pydantic>=2.0.0
