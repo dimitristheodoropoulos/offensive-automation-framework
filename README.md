@@ -263,3 +263,19 @@ See **[`insurance/README.md`](insurance/README.md)** for the full architecture, 
 ## Cloud Deployment & API
 
 The insurance triage pipeline is also exposed as a FastAPI microservice (`api_deployment.py`) for containerized cloud deployment -- see [`insurance/README.md`](insurance/README.md#cloud-ready-api-wrapper) for endpoints and usage.
+
+## 🌐 Live Deployment
+
+The insurance triage API is deployed and publicly accessible:
+
+**https://offensive-automation-framework.onrender.com**
+
+```bash
+curl https://offensive-automation-framework.onrender.com/health
+
+curl -X POST https://offensive-automation-framework.onrender.com/api/v1/insurance/triage \
+  -H "Content-Type: application/json" \
+  -d @examples/claims/auto_high_risk.json
+```
+
+Note: this runs on Render's free tier, which spins down after inactivity -- the first request after idle time may take 30-60 seconds to respond while the instance wakes up.
